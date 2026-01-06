@@ -1,28 +1,41 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import axios from "axios";
 
 function App(){
   const [jobs, setJobs] = useState([]);
   const [newJob, setNewJob] = useState({company: "", role: "", status: "", applied_date: ""});
 
   useEffect(() =>{
-    fetch("http://localhost:3001/applications")
-      .then((res) => res.json())
-      .then(setJobs)
-      .catch((err) => console.error("Error fetching jobs:", err));
+    axios
+      .get("http://localhost:3001/applications")
+      .then((res) => setJobs(res.data))
+      .catch((err) => console.error("Error fetching jobs", err));
   }, [])
 
   const handleAddJobs = async () =>{
     if (!newJob.company || !newJob.role || !newJob.status) return;
 
-    const res = await fetch("http://localhost:3001/applications", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify(newJob),
-    });
-    const addedJob = await res.json();
-    setJobs([...jobs, addedJob]);
-    setNewJob({company: "", role: "", status: "", applied_date: ""});
+    try{
+      const {data} = await axios.post(
+        "http://localhost:3001/applications",
+        newJob
+      );
+      setJobs([...jobs, data]);
+      setNewJob({company: "", role: "", status: "", applied_date: ""});
+    } catch (err) {
+      console.error("Error adding job:", err);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this job?")) return;
+    try{
+      const {data} = await axios.delete(`http://localhost:3001/applications/${id}`);
+      if (data.success) setJobs(jobs.filter((job) => job.id !== id));
+    } catch (err){
+      console.error("Failed to delete job:", err);
+    }
   };
 
   return(
@@ -34,6 +47,7 @@ function App(){
         {jobs.map((job) => (
           <li key={job.id}>
             {job.role} at {job.company} ({job.status}) - Applied: {job.applied_date}
+            <button onClick={() => handleDelete(job.id)}>Delete</button>
           </li>
         ))}
       </ul>
@@ -49,11 +63,17 @@ function App(){
         value={newJob.company}
         onChange={(e) => setNewJob({...newJob, company: e.target.value})}
       />
-      <input 
-        placeholder="Status"
+      <select
         value={newJob.status}
-        onChange={(e) => setNewJob({...newJob, status: e.target.value})}
-      />
+        onChange={(e) => setNewJob({ ...newJob, status: e.target.value})}
+      >
+        <option value="">Select status</option>
+        <option value="Applied">Applied</option>
+        <option value="Interview">Interview</option>
+        <option value="Offer">Offer</option>
+        <option value="Rejected">Rejected</option>
+
+      </select>
       <input
         type="date"
         value={newJob.applied_date}

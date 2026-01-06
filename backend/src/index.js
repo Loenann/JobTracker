@@ -16,6 +16,16 @@ app.get("/applications", (req, res) => {
     .all();
   res.json(rows);
 });
+app.get("/applications/:id", (req, res) => {
+  const { id } = req.params;
+  const job = db.prepare("SELECT * FROM job_applications WHERE id = ?").get(id);
+
+  if (job) {
+    res.json(job);
+  } else {
+    res.status(404).json({ message: "Job not found" });
+  }
+});
 app.post("/applications", (req, res) => {
     const {company, role, status, applied_date} = req.body;
     const appliedDate = req.body.applied_date || new Date().toISOString().split("T")[0];
@@ -31,6 +41,18 @@ app.post("/applications", (req, res) => {
         status,
         applied_date: appliedDate,
     });
+});
+app.delete("/applications/:id", (req, res) =>{
+    const { id } = req.params;
+
+    const stmt = db.prepare("Delete FROM job_applications WHERE id = ?");
+    const info = stmt.run(id);
+
+    if(info.changes>0){
+        res.json({success: true, id})
+    } else {
+        res.status(404).json({success: false, message: "Job not found"});
+    }
 });
 
 const PORT = 3001;
