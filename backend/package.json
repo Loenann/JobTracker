@@ -1,0 +1,23 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Loenann/JobTracker.git"
+  },
+  "author": "Adrian Loenan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Loenann/JobTracker/issues"
+  },
+  "homepage": "https://github.com/Loenann/JobTracker#readme",
+  "description": "",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.2.1"
+  }
+}
