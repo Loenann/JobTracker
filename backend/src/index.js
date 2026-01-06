@@ -54,6 +54,30 @@ app.delete("/applications/:id", (req, res) =>{
         res.status(404).json({success: false, message: "Job not found"});
     }
 });
+app.put("/applications/:id", (req, res) => {
+  const {id} = req.params;
+  const {company, role, status, applied_date} = req.body;
+
+  const stmt = db.prepare(`
+    UPDATE job_applications
+    SET company = ?, role = ?, status = ?, applied_date = ?
+    WHERE id = ?
+  `);
+  
+  const result = stmt.run(company, role, status, applied_date, id);
+
+  if (result.changes === 0){
+    return res.status(404).json({error: "job not found"});
+  }
+
+  res.json({
+    id: Number(id),
+    company,
+    role,
+    status,
+    applied_date,
+  });
+});
 
 const PORT = 3001;
 app.listen(PORT, () => {

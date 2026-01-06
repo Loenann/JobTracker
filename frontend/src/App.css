@@ -17,6 +17,26 @@
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
+.status-applied {
+  color: #fff44f ; /* blue */
+  font-weight: 600;
+}
+
+.status-interview {
+  color: #1e90ff ; /* amber */
+  font-weight: 600;
+}
+
+.status-offer {
+  color: #16a34a; /* green */
+  font-weight: 600;
+}
+
+.status-rejected {
+  color: #dc2626; /* red */
+  font-weight: 600;
+}
+
 
 @keyframes logo-spin {
   from {
