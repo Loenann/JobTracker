@@ -16,6 +16,22 @@ app.get("/applications", (req, res) => {
     .all();
   res.json(rows);
 });
+app.post("/applications", (req, res) => {
+    const {company, role, status, applied_date} = req.body;
+    const appliedDate = req.body.applied_date || new Date().toISOString().split("T")[0];
+    const stmt = db.prepare(
+        "INSERT INTO job_applications (company, role, status, applied_date) VALUES (?, ?, ?, ?)"
+    )
+    const info = stmt.run(company, role, status, appliedDate);
+
+    res.json({
+        id: info.lastInsertRowid,
+        company,
+        role,
+        status,
+        applied_date: appliedDate,
+    });
+});
 
 const PORT = 3001;
 app.listen(PORT, () => {
