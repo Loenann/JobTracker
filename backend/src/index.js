@@ -66,7 +66,7 @@ app.delete("/applications/:id", auth, (req, res) =>{
     const { id } = req.params;
 
     const stmt = db.prepare("Delete FROM job_applications WHERE id = ? AND user_id = ?");
-    const info = stmt.run(id, req.user_Id);
+    const info = stmt.run(id, req.userId);
 
     if(info.changes>0){
         res.json({success: true, id})
@@ -84,7 +84,7 @@ app.put("/applications/:id", auth, (req, res) => {
     WHERE id = ? AND user_id = ?
   `);
   
-  const result = stmt.run(company, role, status, applied_date, id);
+  const result = stmt.run(company, role, status, applied_date, id, req.userId);
 
   if (result.changes === 0){
     return res.status(404).json({error: "job not found or unauthorized"});
