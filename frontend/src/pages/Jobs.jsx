@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import "../App.css";
+import api from "../api";
 
 export default function Jobs() {
   const [jobs, setJobs] = useState([]);
@@ -19,8 +19,8 @@ export default function Jobs() {
   });
 
   useEffect(() => {
-    axios
-      .get("http://localhost:3001/applications", {
+    api
+      .get("/applications", {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -32,8 +32,8 @@ export default function Jobs() {
   const handleAddJobs = async () => {
     if (!newJob.company || !newJob.role || !newJob.status) return;
 
-    const { data } = await axios.post(
-      "http://localhost:3001/applications",
+    const { data } = await api.post(
+      "/applications",
       newJob,
       {
         headers: {
@@ -47,7 +47,7 @@ export default function Jobs() {
   };
 
   const handleDelete = async (id) => {
-    await axios.delete(`http://localhost:3001/applications/${id}`, {
+    await api.delete(`applications/${id}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
@@ -61,8 +61,8 @@ export default function Jobs() {
   };
 
   const handleUpdate = async () => {
-    const { data } = await axios.put(
-      `http://localhost:3001/applications/${editId}`,
+    const { data } = await api.put(
+      `applications/${editId}`,
       editJob,
       {
         headers: {

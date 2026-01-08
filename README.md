@@ -6,8 +6,8 @@ A full-stack job application tracking app that allows users to manage and track 
 * Track application status (Applied, Interview, Offer, Rejected)
 * Color-coded status indicators
 * RESTful API backend
-* (Planned) User Authentication and per-user data isolation
-* (Planned) Dockerized deployment
+* User Authentication and per-user data isolation
+* Dockerized deployment
 
 ## Tech Stack
 ### Frontend
@@ -19,10 +19,9 @@ A full-stack job application tracking app that allows users to manage and track 
 * Node.js
 * Express
 * SQLite (better-sqlite3)
+* JWT authentication
 
 ### Planned/Future
-* JWT authentication
-* Docker
 * Render deployment
 
 ## Project Structure
@@ -30,13 +29,27 @@ A full-stack job application tracking app that allows users to manage and track 
 jobtracker/
 ├── frontend/
 │   ├── src/
-│   └── vite.config.js
+│   │   ├── components
+│   │   │   └── Header.jsx
+│   │   ├── pages
+│   │   │   ├── Jobs.js
+│   │   │   ├── Login.js
+│   │   │   └── Register.jsx
+│   │   ├── api.js
+│   │   ├── App.css
+│   │   ├── App.js
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── Dockerfile
+│   └── vite.config.js 
 ├── backend/
 │   ├── src/
 │   │   ├── index.js
 │   │   └── db.js
-│   └── data/
-│       └── jobtracker.db
+│   ├── data/
+│   │    └── jobtracker.db
+│   ├── Dockerfile
+├── docker-compose.yaml
 └── README.md
 ```
 
@@ -45,6 +58,8 @@ jobtracker/
 - POST /applications
 - PUT /applications/:id
 - DELETE /applications/:id
+- POST /login
+- POST /register
 
 ## Getting Started (Local Setup)
 ### Prerequisites
@@ -80,12 +95,11 @@ jobtracker/
     Dockerization is planned to ensure consisten environment across development and deployment. It simplifies onboarding, reduces "it works on my machine" issues, and prepares the application for future production-grade deployment.
 ## Known Limitations
 * SQLite not ideal for high concurrency
-* No authentication yet (in progress)
 * No cloud presistence on free hosting tiers
 
 ## Roadmap/Future Improvements
-* User authentication with JWT
-* Per-user job isolation
+* User authentication with JWT (completed)
+* Per-user job isolation (completed)
 * Dockerized deployment
 * PostgresSQL migration
 * Filtering and sorting
