@@ -99,25 +99,30 @@ app.put("/applications/:id", auth, (req, res) => {
   });
 });
 app.post("/register", async (req, res) =>{
-  const {email, password} = req.body;
+  const {email, username, password} = req.body;
   
   const hash = await bcrypt.hash(password, 10);
 
   try{
     db.prepare(
-      "INSERT INTO users (email, password_hash) VALUES (?, ?)"
-    ).run(email, hash);
+      "INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)"
+    ).run(email, username, hash);
 
     res.json({success: true});
   } catch {
-    res.status(400).json({error: "User already exists"});
+    res.status(400).json({error: "Email or Username already exists"});
   }
 });
 app.post("/login", async (req, res) =>{
-  const {email, password} = req.body;
+  const {identifier, password} = req.body;
+
+  if (!identifier || !password){
+    return res.status(400).json({ error: "Missing credentials"});
+  }
+
   const user = db
-    .prepare("SELECT * FROM users WHERE email = ?")
-    .get(email);
+    .prepare("SELECT * FROM users WHERE email = ? OR username = ?")
+    .get(identifier, identifier);
   
   if (!user) return res.status(401).json({error: "Invalid Credentials"});
   

@@ -3,14 +3,14 @@ import api from "../api";
 import { useNavigate } from "react-router-dom";
 
 export default function Login(){
-    const [email, setEmail] = useState("");
+    const [identifier, setIdentifier] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
     const handleLogin = async () =>{
         try{
-            const res = await api.post("/login", {email, password});
+            const res = await api.post("/login", {identifier, password});
             localStorage.setItem("token", res.data.token);
             navigate("/");
         } catch {
@@ -21,11 +21,12 @@ export default function Login(){
     const noAccount = async () =>{
         navigate("/register")
     }
+
     return(
         <div>
             <h1>Login</h1>
             {error && <p>{error}</p>}
-            <input placeholder="Email" onChange={(e) => setEmail(e.target.value)}/><br></br>
+            <input placeholder="Email / Username" onChange={(e) => setIdentifier(e.target.value)}/><br></br>
             <input
                 type="password"
                 placeholder="Password"

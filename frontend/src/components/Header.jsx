@@ -14,9 +14,15 @@ export default function Header() {
       <h2>JobTracker</h2>
       
       <nav>
-        <Link to="/" style={styles.link}>Jobs</Link>
-        <Link to="/login" style={styles.link}>Login</Link>
-        <Link to="/register" style={styles.link}>Register</Link>
+        {isAuthenticated && (
+          <Link to="/" style={styles.link}>Jobs</Link>
+        )}
+        {!isAuthenticated &&(
+          <>
+          <Link to="/login" style={styles.link}>Login</Link>
+          <Link to="/register" style={styles.link}>Register</Link>
+        </>
+        )}
       </nav>
       {isAuthenticated && (
         <button onClick={handleLogout} style={styles.button}>
