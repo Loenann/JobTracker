@@ -1,6 +1,8 @@
 # JobTracker
 A full-stack job application tracking app that allows users to manage and track their job applications across different statuses.
 
+JobTracker URL: https://jobtracker-zckw.onrender.com
+
 ## Features
 * Create, view, update, and delete job applications
 * Track application status (Applied, Interview, Offer, Rejected)
@@ -21,8 +23,10 @@ A full-stack job application tracking app that allows users to manage and track 
 * SQLite (better-sqlite3)
 * JWT authentication
 
-### Planned/Future
-* Render deployment
+### DevOps/Deployment
+* Docker
+* Docker Compose
+* Render (cloud deployment)
 
 ## Project Structure
 ```
@@ -32,12 +36,12 @@ jobtracker/
 │   │   ├── components
 │   │   │   └── Header.jsx
 │   │   ├── pages
-│   │   │   ├── Jobs.js
-│   │   │   ├── Login.js
+│   │   │   ├── Jobs.jsx
+│   │   │   ├── Login.jsx
 │   │   │   └── Register.jsx
-│   │   ├── api.js
+│   │   ├── api.jsx
 │   │   ├── App.css
-│   │   ├── App.js
+│   │   ├── App.jsx
 │   │   ├── index.css
 │   │   └── main.jsx
 │   ├── Dockerfile
@@ -54,29 +58,52 @@ jobtracker/
 ```
 
 ## API Overview
-- GET /applications
-- POST /applications
-- PUT /applications/:id
-- DELETE /applications/:id
-- POST /login
-- POST /register
+- ```GET /applications``` : Feth user's job applications
+- ```POST /applications``` : Create a new job application
+- ```PUT /applications/:id``` : Update an existing application
+- ```DELETE /applications/:id``` : Delete an application
+- ```POST /login``` : Register a new user
+- ```POST /register``` : Authenticate user and return JWT
 
 ## Getting Started (Local Setup)
 ### Prerequisites
-* Node.js installed
+* Node.js (v18+ recommended)
+* npm
 ### Steps
 * Clone Repository
 * Install dependencies
 * Run backend
     ```
     cd JobTracker/backend
+    npm install
     npm start
     ```
 * Run frontend
     ```
     cd JobTracker/frontend
+    npm install
     npm run dev
     ```
+* Access frontend from http://localhost:5173
+* Access backend from http://localhost:3001
+
+## Getting Started (Local Setup with Docker)
+### Prerequisites
+* Docker
+* Docker Compose
+### Steps
+1. Clone the repository
+```
+git clone git@github.com:Loenann/JobTracker.git
+cd jobtracker
+```
+2. Build and start the application
+```
+docker compose up --build
+```
+3. Access the application
+* Frontend: http://localhost:5173
+* Backend: http://localhost:3001
 
 ## Design Decisions
 ### Why SQLite?
@@ -92,17 +119,20 @@ jobtracker/
     Render was selected as a deployment target due to its simplicity and low barrier to entry. It supports full-stack applications with minimal configuration, making it suitable for small projects, demos, and portofolio applications.
 
 ### Why Dockerize?
-    Dockerization is planned to ensure consisten environment across development and deployment. It simplifies onboarding, reduces "it works on my machine" issues, and prepares the application for future production-grade deployment.
+    Docker ensure consistent environment across development and deployment. It simplifies setup, reduces configuration issues, and prepares the project for future scalability.
+
 ## Known Limitations
 * SQLite not ideal for high concurrency
 * No cloud presistence on free hosting tiers
+* No role-based access control (single user role)
 
 ## Roadmap/Future Improvements
-* User authentication with JWT (completed)
-* Per-user job isolation (completed)
-* Dockerized deployment
-* PostgresSQL migration
-* Filtering and sorting
+* UI enhancements and improved form validation
+* Filtering and sorting job applications
+* Page for large datasets
+* Migration to Postgres
+* Refresh token support for authentication
+* Improved error handling and user feedback
 
 
 
