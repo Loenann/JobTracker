@@ -1,12 +1,32 @@
+version: "3.9"
+
 services:
+  postgres:
+    image: postgres:15
+    container_name: jobtracker-postgres
+    environment:
+      POSTGRES_USER: jobtracker
+      POSTGRES_PASSWORD: jobtracker
+      POSTGRES_DB: jobtracker
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
   backend:
     build: ./backend
+    container_name: jobtracker-backend
     ports:
       - "3001:3001"
-    volumes:
-      - ./backend/data:/app/data
+    depends_on:
+      - postgres
     env_file:
       - ./backend/.env
+    environment:
+      DATABASE_URL: postgres://jobtracker:jobtracker@postgres:5432/jobtracker
+    volumes:
+      - ./backend:/app
+    command: npm run dev
 
   frontend:
     build: ./frontend
@@ -16,3 +36,6 @@ services:
       VITE_API_URL: http://backend:3001
     depends_on:
       - backend
+
+volumes:
+  postgres_data:

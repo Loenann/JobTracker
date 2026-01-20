@@ -4,6 +4,7 @@ const cors = require("cors");
 const db = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const app = express();
@@ -29,112 +30,154 @@ app.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.get("/applications", auth, (req, res) => {
-  const rows = db
-    .prepare("SELECT * FROM job_applications WHERE user_id = ?")
-    .all(req.userId);
-  res.json(rows);
+/* ======================
+   JOB APPLICATIONS
+====================== */
+
+app.get("/applications", auth, async (req, res) => {
+  const result = await db.query(
+    "SELECT * FROM job_applications WHERE user_id = $1",
+    [req.userId]
+  );
+  res.json(result.rows);
 });
-app.get("/applications/:id", auth, (req, res) => {
+
+app.get("/applications/:id", auth, async (req, res) => {
   const { id } = req.params;
-  const job = db
-    .prepare("SELECT * FROM job_applications WHERE id = ? AND user_id = ?")
-    .get(id, req.userId);
+
+  const result = await db.query(
+    "SELECT * FROM job_applications WHERE id = $1 AND user_id = $2",
+    [id, req.userId]
+  );
+
+  const job = result.rows[0];
 
   if (job) {
     res.json(job);
   } else {
-    res.status(404).json({ message: "Job not found or unauthorized"});
+    res.status(404).json({ message: "Job not found or unauthorized" });
   }
 });
-app.post("/applications", auth,(req, res) => {
-    const {company, role, status, applied_date} = req.body;
-    const appliedDate = req.body.applied_date || new Date().toISOString().split("T")[0];
-    const info = db.prepare(
-        "INSERT INTO job_applications (company, role, status, applied_date, user_id) VALUES (?, ?, ?, ?, ?)"
-    ).run(company, role, status, appliedDate, req.userId);
 
-    res.json({
-        id: info.lastInsertRowid,
-        company,
-        role,
-        status,
-        applied_date: appliedDate,
-    });
+app.post("/applications", auth, async (req, res) => {
+  const { company, role, status, applied_date } = req.body;
+  const appliedDate =
+    applied_date || new Date().toISOString().split("T")[0];
+
+  const result = await db.query(
+    `
+    INSERT INTO job_applications
+      (company, role, status, applied_date, user_id)
+    VALUES ($1, $2, $3, $4, $5)
+    RETURNING id
+    `,
+    [company, role, status, appliedDate, req.userId]
+  );
+
+  res.json({
+    id: result.rows[0].id,
+    company,
+    role,
+    status,
+    applied_date: appliedDate,
+  });
 });
-app.delete("/applications/:id", auth, (req, res) =>{
-    const { id } = req.params;
 
-    const stmt = db.prepare("Delete FROM job_applications WHERE id = ? AND user_id = ?");
-    const info = stmt.run(id, req.userId);
+app.delete("/applications/:id", auth, async (req, res) => {
+  const { id } = req.params;
 
-    if(info.changes>0){
-        res.json({success: true, id})
-    } else {
-        res.status(404).json({success: false, message: "Job not found or unauthorized"});
-    }
+  const result = await db.query(
+    "DELETE FROM job_applications WHERE id = $1 AND user_id = $2",
+    [id, req.userId]
+  );
+
+  if (result.rowCount > 0) {
+    res.json({ success: true, id });
+  } else {
+    res
+      .status(404)
+      .json({ success: false, message: "Job not found or unauthorized" });
+  }
 });
-app.put("/applications/:id", auth, (req, res) => {
-  const {id} = req.params;
-  const {company, role, status, applied_date} = req.body;
 
-  const stmt = db.prepare(`
+app.put("/applications/:id", auth, async (req, res) => {
+  const { id } = req.params;
+  const { company, role, status, applied_date } = req.body;
+
+  const result = await db.query(
+    `
     UPDATE job_applications
-    SET company = ?, role = ?, status = ?, applied_date = ?
-    WHERE id = ? AND user_id = ?
-  `);
-  
-  const result = stmt.run(company, role, status, applied_date, id, req.userId);
+    SET company = $1, role = $2, status = $3, applied_date = $4
+    WHERE id = $5 AND user_id = $6
+    `,
+    [company, role, status, applied_date, id, req.userId]
+  );
 
-  if (result.changes === 0){
-    return res.status(404).json({error: "job not found or unauthorized"});
+  if (result.rowCount === 0) {
+    return res
+      .status(404)
+      .json({ error: "Job not found or unauthorized" });
   }
 
   res.json({
-    id: Number(id),
+    id,
     company,
     role,
     status,
     applied_date,
   });
 });
-app.post("/register", async (req, res) =>{
-  const {email, username, password} = req.body;
-  
+
+/* ======================
+   AUTH
+====================== */
+
+app.post("/register", async (req, res) => {
+  const { email, username, password } = req.body;
+
   const hash = await bcrypt.hash(password, 10);
 
-  try{
-    db.prepare(
-      "INSERT INTO users (email, username, password_hash) VALUES (?, ?, ?)"
-    ).run(email, username, hash);
+  try {
+    await db.query(
+      "INSERT INTO users (email, username, password_hash) VALUES ($1, $2, $3)",
+      [email, username, hash]
+    );
 
-    res.json({success: true});
-  } catch {
-    res.status(400).json({error: "Email or Username already exists"});
+    res.json({ success: true });
+  } catch (err) {
+    res
+      .status(400)
+      .json({ error: "Email or Username already exists" });
   }
 });
-app.post("/login", async (req, res) =>{
-  const {identifier, password} = req.body;
 
-  if (!identifier || !password){
-    return res.status(400).json({ error: "Missing credentials"});
+app.post("/login", async (req, res) => {
+  const { identifier, password } = req.body;
+
+  if (!identifier || !password) {
+    return res.status(400).json({ error: "Missing credentials" });
   }
 
-  const user = db
-    .prepare("SELECT * FROM users WHERE email = ? OR username = ?")
-    .get(identifier, identifier);
-  
-  if (!user) return res.status(401).json({error: "Invalid Credentials"});
-  
-  const valid = await bcrypt.compare(password, user.password_hash);
-  
-  if (!valid) return res.status(401).json({error: "Invalid Credentials"});
+  const result = await db.query(
+    "SELECT * FROM users WHERE email = $1 OR username = $1",
+    [identifier]
+  );
 
-  const token = jwt.sign({userId: user.id}, JWT_SECRET,{
+  const user = result.rows[0];
+
+  if (!user)
+    return res.status(401).json({ error: "Invalid Credentials" });
+
+  const valid = await bcrypt.compare(password, user.password_hash);
+
+  if (!valid)
+    return res.status(401).json({ error: "Invalid Credentials" });
+
+  const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
     expiresIn: "1h",
   });
 
-  res.json({token});
+  res.json({ token });
 });
 
 const PORT = 3001;
