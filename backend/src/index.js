@@ -5,6 +5,8 @@ const db = require("./db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
+console.log("Connecting to Postgres:", process.env.DB_HOST, process.env.DB_NAME);
+
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const app = express();
